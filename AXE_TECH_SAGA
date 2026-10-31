@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXE TECH SAGA - Modern Synth Soundboard Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff0f5',
+                            100: '#ffe3ed',
+                            400: '#f50057',
+                            500: '#ff4081',
+                            600: '#e91e63',
+                            700: '#c2185b',
+                            dark: '#0f111a',
+                            card: '#1a1d2d',
+                            border: '#2a2e45'
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 15px rgba(255, 64, 129, 0.4)',
+                        'glow-lg': '0 0 25px rgba(255, 64, 129, 0.6)',
+                        'pad-active': 'inset 0 2px 4px rgba(0,0,0,0.6), 0 0 15px rgba(255,64,129,0.8)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0c14;
+            color: #e2e8f0;
+            user-select: none;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f111a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2e45;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff4081;
+        }
+
+        /* Sound Pad Pressed effect */
+        .pad-btn:active {
+            transform: translateY(2px) scale(0.98);
+        }
+
+        /* Equalizer Animation Bar */
+        .eq-bar {
+            animation: bounce 0.6s ease-in-out infinite alternate;
+        }
+        @keyframes bounce {
+            0% { height: 15%; }
+            100% { height: 100%; }
+        }
+        .eq-bar:nth-child(1) { animation-delay: 0.1s; }
+        .eq-bar:nth-child(2) { animation-delay: 0.3s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Custom range slider styling */
+        input[type=range] {
+            accent-color: #ff4081;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans overflow-x-hidden">
+
+    <!-- Header Section -->
+    <header class="bg-brand-card border-b border-brand-border sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+            <!-- Logo & Branding -->
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white text-2xl font-black shadow-glow-lg">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-widest text-white uppercase flex items-center gap-2">
+                        AXE<span class="text-brand-500">_TECH_SAGA</span>
+                    </h1>
+                    <p class="text-[10px] sm:text-xs text-brand-400 font-mono tracking-widest uppercase">Modern Synth Soundboard Studio</p>
+                </div>
+            </div>
+
+            <!-- Global Controls Bar -->
+            <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
+                <!-- Master Volume -->
+                <div class="flex items-center space-x-2 bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border">
+                    <i class="fa-solid fa-volume-high text-brand-500 text-sm"></i>
+                    <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="0.8" class="w-20 sm:w-28 cursor-pointer">
+                    <span id="masterVolVal" class="text-xs font-mono w-8 text-right text-gray-300">80%</span>
+                </div>
+
+                <!-- Global Pitch Shift -->
+                <div class="flex items-center space-x-2 bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border" title="Master Pitch Shift">
+                    <i class="fa-solid fa-wave-square text-brand-500 text-sm"></i>
+                    <span class="text-xs text-gray-400 hidden sm:inline font-mono">PITCH:</span>
+                    <input type="range" id="masterPitch" min="0.5" max="1.5" step="0.05" value="1.0" class="w-16 sm:w-20 cursor-pointer">
+                    <span id="masterPitchVal" class="text-xs font-mono text-gray-300">1.0x</span>
+                </div>
+
+                <!-- Stop All Panic Button -->
+                <button id="stopAllBtn" class="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-red-900/30 text-sm">
+                    <i class="fa-solid fa-square"></i>
+                    <span class="font-mono tracking-wider">KILL ALL</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+
+        <!-- Search, Filter & Action Toolbar -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-brand-card p-4 rounded-xl border border-brand-border shadow-lg">
+            
+            <!-- Category Chips -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none" id="categoryContainer">
+                <button class="cat-chip active bg-brand-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shadow-glow font-mono uppercase tracking-wider" data-category="all">
+                    All Sounds
+                </button>
+                <button class="cat-chip bg-brand-dark hover:bg-gray-800 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border border-brand-border font-mono uppercase tracking-wider" data-category="celebration">
+                    🎉 Celebration
+                </button>
+                <button class="cat-chip bg-brand-dark hover:bg-gray-800 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border border-brand-border font-mono uppercase tracking-wider" data-category="comedy">
+                    😂 Comedy
+                </button>
+                <button class="cat-chip bg-brand-dark hover:bg-gray-800 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border border-brand-border font-mono uppercase tracking-wider" data-category="gameshow">
+                    🎯 Game Show
+                </button>
+                <button class="cat-chip bg-brand-dark hover:bg-gray-800 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border border-brand-border font-mono uppercase tracking-wider" data-category="hype">
+                    🔥 Hype
+                </button>
+                <button class="cat-chip bg-brand-dark hover:bg-gray-800 text-gray-300 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border border-brand-border font-mono uppercase tracking-wider" data-category="custom">
+                    📁 Custom
+                </button>
+            </div>
+
+            <!-- Search & Add sound -->
+            <div class="flex items-center gap-3">
+                <div class="relative flex-1 md:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" id="searchInput" placeholder="SEARCH PATCHES OR HOTKEYS..." class="w-full bg-brand-dark border border-brand-border pl-9 pr-3 py-1.5 rounded-lg text-xs text-white focus:outline-none focus:border-brand-500 transition-colors font-mono uppercase">
+                </div>
+                <button id="openAddModalBtn" class="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-glow whitespace-nowrap transition-all active:scale-95 font-mono uppercase tracking-wider">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Load Patch</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sound Pads Grid -->
+        <div id="padsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <!-- Dynamic Sound Pads inserted here via JS -->
+        </div>
+
+        <!-- Empty State (Hidden by default) -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center p-12 text-center bg-brand-card rounded-2xl border border-dashed border-brand-border">
+            <i class="fa-solid fa-waveform-lines text-5xl text-gray-600 mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-300 font-mono">NO PATCHES FOUND</h3>
+            <p class="text-xs text-gray-500 max-w-sm mt-1">Try resetting your search query or add a custom audio clip using the "Load Patch" button above.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer Bar -->
+    <footer class="bg-brand-card border-t border-brand-border py-4 px-6 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400 gap-2 font-mono">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="uppercase tracking-widest text-[10px]">SAGA ENGINE READY // 48kHz</span>
+            </div>
+            <div class="uppercase tracking-wider text-[10px] text-gray-500">
+                Use Hotkeys <kbd class="px-1.5 py-0.5 bg-brand-dark border border-brand-border rounded text-brand-400 font-mono">1-0</kbd> or <kbd class="px-1.5 py-0.5 bg-brand-dark border border-brand-border rounded text-brand-400 font-mono">Q</kbd> to trigger
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add/Edit Custom Sound Modal -->
+    <div id="soundModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto" id="modalBox">
+            <div class="flex items-center justify-between pb-4 border-b border-brand-border">
+                <h3 class="text-base font-bold text-white flex items-center gap-2 font-mono uppercase tracking-wider" id="modalTitle">
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i>
+                    Load Custom Patch
+                </h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="soundForm" class="mt-4 space-y-4">
+                <input type="hidden" id="editPadId" value="">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1 font-mono uppercase tracking-wider">Patch Name</label>
+                    <input type="text" id="soundNameInput" required placeholder="e.g., Stadium Horn" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1 font-mono uppercase tracking-wider">Category</label>
+                    <select id="soundCategoryInput" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 font-mono uppercase">
+                        <option value="custom">Custom Patches</option>
+                        <option value="celebration">Celebration</option>
+                        <option value="comedy">Comedy & Stings</option>
+                        <option value="gameshow">Game Show</option>
+                        <option value="hype">Hype & Energy</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1 font-mono uppercase tracking-wider">Hotkey</label>
+                        <input type="text" id="soundHotkeyInput" maxlength="1" placeholder="e.g. A" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-xs text-white uppercase text-center font-bold focus:outline-none focus:border-brand-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1 font-mono uppercase tracking-wider">Fallback Icon</label>
+                        <select id="soundIconInput" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 font-mono">
+                            <option value="fa-music">🎵 Music Note</option>
+                            <option value="fa-bullhorn">📢 Bullhorn</option>
+                            <option value="fa-star">⭐ Star</option>
+                            <option value="fa-fire">🔥 Fire</option>
+                            <option value="fa-trophy">🏆 Trophy</option>
+                            <option value="fa-face-laugh-beam">😂 Laugh</option>
+                            <option value="fa-bell">🔔 Bell</option>
+                            <option value="fa-bolt">⚡ Bolt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Custom Image Upload Section -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1 font-mono uppercase tracking-wider">Custom Image (Optional)</label>
+                    <div class="flex items-center gap-3">
+                        <label class="flex-1 bg-brand-dark border border-dashed border-brand-border hover:border-brand-500 p-3 rounded-lg cursor-pointer flex flex-col items-center justify-center text-center transition-colors">
+                            <i class="fa-solid fa-image text-brand-500 text-lg mb-1"></i>
+                            <span id="imageChooseText" class="text-[10px] text-gray-300 font-medium font-mono uppercase tracking-wider">Select Image (JPG, PNG)</span>
+                            <input type="file" id="soundImageInput" accept="image/*" class="hidden">
+                        </label>
+                        <div class="relative">
+                            <img id="imagePreview" class="hidden w-14 h-14 object-cover rounded-xl border border-brand-border" alt="Preview">
+                            <button type="button" id="removeImageBtn" class="hidden absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-lg hover:bg-red-700 transition-colors">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1 font-mono uppercase tracking-wider">Audio Source</label>
+                    <div class="flex flex-col gap-2">
+                        <label class="bg-brand-dark border border-dashed border-brand-border hover:border-brand-500 p-3 rounded-lg cursor-pointer flex flex-col items-center justify-center text-center transition-colors">
+                            <i class="fa-solid fa-cloud-arrow-up text-brand-500 text-lg mb-1"></i>
+                            <span id="fileChooseText" class="text-xs text-gray-300 font-medium font-mono uppercase tracking-wider">Select Audio File</span>
+                            <span class="text-[10px] text-gray-500 mt-0.5 font-mono">MP3, WAV, OGG</span>
+                            <input type="file" id="soundFileInput" accept="audio/*" class="hidden">
+                        </label>
+                        <button type="button" id="removeAudioBtn" class="hidden text-xs text-red-400 hover:text-red-300 underline text-left font-mono">Remove attached audio</button>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" id="cancelModalBtn" class="px-4 py-2 bg-brand-dark border border-brand-border hover:bg-gray-800 rounded-lg text-xs font-semibold text-gray-300 font-mono uppercase tracking-wider">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white rounded-lg text-xs font-semibold shadow-glow font-mono uppercase tracking-wider">Save Patch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Engine -->
+    <script>
+        /**
+         * WEB AUDIO SYNTHESIZER ENGINE
+         * Generates high quality synthesized event SFX on the fly without external MP3 assets
+         */
+        class SoundboardSynthesizer {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // 1. Fanfare / Victory Chime
+            playFanfare(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 523.25]; // C4, E4, G4, C5, G4, C5
+                const times = [0, 0.15, 0.3, 0.45, 0.65, 0.8];
+                const durations = [0.12, 0.12, 0.12, 0.18, 0.12, 0.5];
+
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq * pitch, now + times[idx]);
+
+                    gain.gain.setValueAtTime(0, now + times[idx]);
+                    gain.gain.linearRampToValueAtTime(0.3 * volume, now + times[idx] + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + times[idx] + durations[idx]);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + times[idx]);
+                    osc.stop(now + times[idx] + durations[idx]);
+                });
+            }
+
+            // 2. Rimshot (Ba-Dum-Tss)
+            playRimshot(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+
+                const osc1 = this.ctx.createOscillator();
+                const gain1 = this.ctx.createGain();
+                osc1.frequency.setValueAtTime(120 * pitch, now);
+                osc1.frequency.exponentialRampToValueAtTime(40 * pitch, now + 0.08);
+                gain1.gain.setValueAtTime(0.6 * volume, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc1.connect(gain1);
+                gain1.connect(this.ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.08);
+
+                const osc2 = this.ctx.createOscillator();
+                const gain2 = this.ctx.createGain();
+                osc2.frequency.setValueAtTime(150 * pitch, now + 0.12);
+                osc2.frequency.exponentialRampToValueAtTime(50 * pitch, now + 0.22);
+                gain2.gain.setValueAtTime(0.6 * volume, now + 0.12);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+                osc2.connect(gain2);
+                gain2.connect(this.ctx.destination);
+                osc2.start(now + 0.12);
+                osc2.stop(now + 0.22);
+
+                const bufferSize = this.ctx.sampleRate * 0.3;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.setValueAtTime(5000 * pitch, now + 0.26);
+
+                const gain3 = this.ctx.createGain();
+                gain3.gain.setValueAtTime(0.4 * volume, now + 0.26);
+                gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+                noise.connect(filter);
+                filter.connect(gain3);
+                gain3.connect(this.ctx.destination);
+
+                noise.start(now + 0.26);
+                noise.stop(now + 0.55);
+            }
+
+            // 3. Drum Roll
+            playDrumRoll(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const totalDuration = 1.8;
+                const interval = 0.04;
+
+                for (let t = 0; t < totalDuration; t += interval) {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    const currentVol = (0.05 + (t / totalDuration) * 0.4) * volume;
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime((180 + Math.random() * 20) * pitch, now + t);
+
+                    gain.gain.setValueAtTime(currentVol, now + t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + t + 0.035);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + t);
+                    osc.stop(now + t + 0.035);
+                }
+
+                setTimeout(() => {
+                    const crashOsc = this.ctx.createOscillator();
+                    const crashGain = this.ctx.createGain();
+                    crashOsc.frequency.setValueAtTime(80 * pitch, this.ctx.currentTime);
+                    crashGain.gain.setValueAtTime(0.7 * volume, this.ctx.currentTime);
+                    crashGain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+                    crashOsc.connect(crashGain);
+                    crashGain.connect(this.ctx.destination);
+                    crashOsc.start();
+                    crashOsc.stop(this.ctx.currentTime + 0.4);
+                }, totalDuration * 1000);
+            }
+
+            // 4. Applause / Cheering Noise
+            playApplause(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const duration = 2.5;
+
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    b0 = 0.99886 * b0 + white * 0.0555179;
+                    b1 = 0.99332 * b1 + white * 0.0750759;
+                    b2 = 0.96900 * b2 + white * 0.1538520;
+                    b3 = 0.86650 * b3 + white * 0.3104856;
+                    b4 = 0.55000 * b4 + white * 0.5329522;
+                    b5 = -0.7616 * b5 - white * 0.0168980;
+                    data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                    data[i] *= 0.11;
+                    b6 = white * 0.115926;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1200 * pitch, now);
+                filter.Q.setValueAtTime(1.2, now);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.01, now);
+                gain.gain.linearRampToValueAtTime(0.5 * volume, now + 0.4);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                noise.start(now);
+                noise.stop(now + duration);
+            }
+
+            // 5. Air Horn / Hype Horn
+            playAirHorn(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const bursts = [0, 0.18, 0.36];
+
+                bursts.forEach(delay => {
+                    const osc1 = this.ctx.createOscillator();
+                    const osc2 = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc1.type = 'sawtooth';
+                    osc2.type = 'sawtooth';
+
+                    osc1.frequency.setValueAtTime(466.16 * pitch, now + delay); 
+                    osc2.frequency.setValueAtTime(311.13 * pitch, now + delay); 
+
+                    gain.gain.setValueAtTime(0.4 * volume, now + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.15);
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc1.start(now + delay);
+                    osc2.start(now + delay);
+                    osc1.stop(now + delay + 0.15);
+                    osc2.stop(now + delay + 0.15);
+                });
+            }
+
+            // 6. Wrong Answer Buzzer
+            playBuzzer(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(130 * pitch, now); 
+
+                gain.gain.setValueAtTime(0.5 * volume, now);
+                gain.gain.setValueAtTime(0.5 * volume, now + 0.5);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.55);
+            }
+
+            // 7. Correct Answer Ding
+            playCorrectDing(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const notes = [523.25, 659.25, 783.99, 1046.50]; 
+                
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq * pitch, now + (idx * 0.08));
+
+                    gain.gain.setValueAtTime(0.4 * volume, now + (idx * 0.08));
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + (idx * 0.08) + 0.4);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + (idx * 0.08));
+                    osc.stop(now + (idx * 0.08) + 0.4);
+                });
+            }
+
+            // 8. Record Scratch
+            playRecordScratch(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800 * pitch, now);
+                osc.frequency.exponentialRampToValueAtTime(100 * pitch, now + 0.25);
+
+                gain.gain.setValueAtTime(0.4 * volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+
+            // 9. Whoosh / Riser Transition
+            playWhoosh(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const duration = 0.8;
+
+                const bufferSize = this.ctx.sampleRate * duration;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(200 * pitch, now);
+                filter.frequency.exponentialRampToValueAtTime(3500 * pitch, now + duration);
+                filter.Q.setValueAtTime(3.0, now);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.01, now);
+                gain.gain.linearRampToValueAtTime(0.5 * volume, now + (duration * 0.7));
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                noise.start(now);
+                noise.stop(now + duration);
+            }
+
+            // 10. Countdown Beep
+            playCountdown(pitch = 1.0, volume = 1.0) {
+                this.init();
+                const now = this.ctx.currentTime;
+                const beeps = [0, 0.4, 0.8];
+
+                beeps.forEach((delay, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    const freq = (idx === 2) ? 880 : 440; 
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq * pitch, now + delay);
+
+                    gain.gain.setValueAtTime(0.4 * volume, now + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.15);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now + delay);
+                    osc.stop(now + delay + 0.15);
+                });
+            }
+        }
+
+        // Initialize Audio Synthesizer Engine
+        const synth = new SoundboardSynthesizer();
+
+        /* 
+         * FIXED: Added the missing comma after the 6th object.
+         */
+        let soundPads = [
+            { id: '1', name: 'Drum Roll', category: 'hype', hotkey: '1', icon: 'fa-drum', synthType: 'drumroll', volume: 1.0, isLoop: false, customAudioUrl: '1. Drum Roll.mp3', customImageUrl: 'drum.jpg'},
+            { id: '2', name: 'Aray koh', category: 'comedy', hotkey: '2', icon: 'fa-face-laugh-beam', synthType: 'rimshot', volume: 1.0, isLoop: false, customAudioUrl: '2. Aray koh.mp3', customImageUrl: 'aray ko.jpg'},
+            { id: '3', name: 'hahahaha', category: 'comedy', hotkey: '3', icon: 'fa-face-laugh-beam', synthType: 'rimshot', volume: 1.0, isLoop: false, customAudioUrl: '3. hahahaha.mp3', customImageUrl: 'hahahaha.jpg'},
+            { id: '4', name: 'Applause', category: 'celebration', hotkey: '4', icon: 'fa-hands-clapping', synthType: 'applause', volume: 1.0, isLoop: false, customAudioUrl: '4. Applause.mp3', customImageUrl: 'applause.jpg'},
+            { id: '5', name: 'Correct buzzer', category: 'gameshow', hotkey: '5', icon: 'fa-xmark-circle', synthType: 'buzzer', volume: 1.0, isLoop: false, customAudioUrl: '5. Correct buzzer.mp3', customImageUrl: 'correct buzzer.jpg'},
+            { id: '6', name: 'Wrong buzzer', category: 'custom', hotkey: 'q', icon: 'fa-bolt', synthType: 'ding', volume: 1.0, isLoop: false, customAudioUrl: '6. Wrong Buzzer.mp3', customImageUrl: 'wrong buzzer.jpg' },
+            { id: '7', name: 'Oh No!', category: 'comedy', hotkey: '6', icon: 'fa-triangle-exclamation', synthType: 'scratch', volume: 1.0, isLoop: false, customAudioUrl: '7. Oh No!.mp3', customImageUrl: 'Oh no!.jpg'},
+            { id: '8', name: 'We Are the Champions', category: 'celebration', hotkey: '7', icon: 'fa-trophy', synthType: 'fanfare', volume: 1.0, isLoop: false, customAudioUrl: '8. We Are the Champions.mp3', customImageUrl: 'we are the champion.jpg'},
+            { id: '9', name: 'shet nakita ako', category: 'comedy', hotkey: '8', icon: 'fa-wind', synthType: 'whoosh', volume: 1.0, isLoop: false, customAudioUrl: '9. shet nakita ako.mp3', customImageUrl: 'kuya dogs.jpg'},
+            { id: '10', name: "Who's Next_", category: 'gameshow', hotkey: '9', icon: 'fa-stopwatch', synthType: 'countdown', volume: 1.0, isLoop: false, customAudioUrl: '10. Whos Next_.mp3', customImageUrl: 'whos next.jpg'},
+            { id: '11', name: 'WoW', category: 'celebration', hotkey: '0', icon: 'fa-star', synthType: 'ding', volume: 1.0, isLoop: false, customAudioUrl: '11. WoW.mp3', customImageUrl: 'wow.jpg'},
+        ];
+
+        // Active state tracker
+        let activeCategory = 'all';
+        let activeAudioSources = {};  
+        let activeLoopIntervals = {};
+
+        // DOM Element Selectors
+        const padsGrid = document.getElementById('padsGrid');
+        const emptyState = document.getElementById('emptyState');
+        const masterVolumeInput = document.getElementById('masterVolume');
+        const masterVolVal = document.getElementById('masterVolVal');
+        const masterPitchInput = document.getElementById('masterPitch');
+        const masterPitchVal = document.getElementById('masterPitchVal');
+        const stopAllBtn = document.getElementById('stopAllBtn');
+        const searchInput = document.getElementById('searchInput');
+        const categoryContainer = document.getElementById('categoryContainer');
+
+        // Modal DOM Selectors
+        const openAddModalBtn = document.getElementById('openAddModalBtn');
+        const soundModal = document.getElementById('soundModal');
+        const modalBox = document.getElementById('modalBox');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const soundForm = document.getElementById('soundForm');
+        const soundFileInput = document.getElementById('soundFileInput');
+        const fileChooseText = document.getElementById('fileChooseText');
+        const removeAudioBtn = document.getElementById('removeAudioBtn');
+        
+        // Image Modal DOM Selectors
+        const soundImageInput = document.getElementById('soundImageInput');
+        const imageChooseText = document.getElementById('imageChooseText');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+
+        // Render Sound Pads to UI
+        function renderPads() {
+            padsGrid.innerHTML = '';
+            
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            const filteredPads = soundPads.filter(pad => {
+                const matchesCategory = (activeCategory === 'all') || (pad.category === activeCategory);
+                const matchesSearch = pad.name.toLowerCase().includes(searchTerm) || pad.hotkey.toLowerCase().includes(searchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredPads.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            filteredPads.forEach(pad => {
+                const isPlaying = !!activeAudioSources[pad.id];
+                const padCard = document.createElement('div');
+                
+                padCard.className = `pad-btn relative bg-brand-card hover:bg-opacity-80 border ${isPlaying ? 'border-brand-500 shadow-glow' : 'border-brand-border'} rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-150 group h-36 overflow-hidden`;
+                padCard.dataset.padId = pad.id;
+
+                // Determine what to show inside the icon box (Image or FontAwesome Icon)
+                const iconContent = pad.customImageUrl 
+                    ? `<img src="${pad.customImageUrl}" class="w-full h-full object-cover">` 
+                    : `<i class="fa-solid ${pad.icon}"></i>`;
+
+                padCard.innerHTML = `
+                    <!-- Top Info Header -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-brand-400 bg-brand-dark px-2 py-0.5 rounded border border-brand-border font-mono">
+                            ${pad.category}
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <button class="loop-btn text-xs text-gray-400 hover:text-brand-500 ${pad.isLoop ? 'text-brand-500 font-bold' : ''} p-1" title="Toggle Sound Loop">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                            <button class="edit-btn text-xs text-gray-400 hover:text-white p-1" title="Edit Pad">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Center Sound Title & Icon -->
+                    <div class="flex items-center gap-3 my-2">
+                        <!-- Image / Icon Container -->
+                        <div class="w-10 h-10 rounded-xl ${isPlaying ? 'bg-brand-500 text-white shadow-glow' : 'bg-brand-dark text-brand-500'} flex items-center justify-center text-lg group-hover:scale-110 transition-transform border border-brand-border overflow-hidden">
+                            ${iconContent}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs font-bold text-white truncate flex items-center gap-1 font-mono tracking-wide">
+                                ${pad.name}
+                                ${pad.customAudioUrl ? '<i class="fa-solid fa-music text-[10px] text-brand-400 ml-1" title="Custom Audio Attached"></i>' : ''}
+                            </h4>
+                            <span class="text-[10px] text-gray-500 font-mono tracking-wider">KEY: <kbd class="px-1 py-0.2 bg-brand-dark border border-brand-border rounded text-brand-400 font-bold">${pad.hotkey.toUpperCase()}</kbd></span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Controls & Equalizer Indicator -->
+                    <div class="flex items-center justify-between pt-2 border-t border-brand-border/50">
+                        <!-- Equalizer Animation (Shown when playing) -->
+                        <div class="flex items-end gap-0.5 h-3 ${isPlaying ? 'opacity-100' : 'opacity-0'} transition-opacity">
+                            <span class="w-1 bg-brand-500 rounded-full eq-bar"></span>
+                            <span class="w-1 bg-brand-500 rounded-full eq-bar"></span>
+                            <span class="w-1 bg-brand-500 rounded-full eq-bar"></span>
+                            <span class="w-1 bg-brand-500 rounded-full eq-bar"></span>
+                        </div>
+
+                        <!-- Volume Slider per pad -->
+                        <div class="flex items-center gap-1.5" onclick="event.stopPropagation();">
+                            <i class="fa-solid fa-volume-low text-[10px] text-gray-500"></i>
+                            <input type="range" min="0" max="1" step="0.1" value="${pad.volume}" class="pad-vol-slider w-12 cursor-pointer">
+                        </div>
+                    </div>
+                `;
+
+                // Event listener to trigger sound
+                padCard.addEventListener('click', (e) => {
+                    if (e.target.closest('.loop-btn') || e.target.closest('.edit-btn') || e.target.closest('.pad-vol-slider')) return;
+                    playSound(pad.id);
+                });
+
+                // Loop toggle click
+                const loopBtn = padCard.querySelector('.loop-btn');
+                loopBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pad.isLoop = !pad.isLoop;
+                    renderPads();
+                });
+
+                // Edit pad click
+                const editBtn = padCard.querySelector('.edit-btn');
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditModal(pad);
+                });
+
+                // Pad level volume adjust
+                const padVolSlider = padCard.querySelector('.pad-vol-slider');
+                padVolSlider.addEventListener('input', (e) => {
+                    pad.volume = parseFloat(e.target.value);
+                });
+
+                padsGrid.appendChild(padCard);
+            });
+        }
+
+        // Core Sound Dispatcher Function
+        function playSound(padId) {
+            const pad = soundPads.find(p => p.id === padId);
+            if (!pad) return;
+
+            const masterVol = parseFloat(masterVolumeInput.value);
+            const masterPitch = parseFloat(masterPitchInput.value);
+            const finalVol = pad.volume * masterVol;
+
+            // Stop sound if already playing non-looping toggle
+            if (activeAudioSources[pad.id]) {
+                stopSound(pad.id);
+                return;
+            }
+
+            activeAudioSources[pad.id] = true;
+            renderPads();
+
+            // Execute Custom Audio File OR Audio Synthesizer
+            if (pad.customAudioUrl) {
+                const audio = new Audio(pad.customAudioUrl);
+                audio.volume = finalVol;
+                audio.playbackRate = masterPitch;
+                audio.loop = pad.isLoop;
+                
+                audio.play().catch(err => console.log('Audio playback prevented:', err));
+                activeAudioSources[pad.id] = audio;
+
+                audio.onended = () => {
+                    if (!pad.isLoop) {
+                        delete activeAudioSources[pad.id];
+                        renderPads();
+                    }
+                };
+            } else {
+                // Synthesized Web Audio
+                const triggerSynth = () => {
+                    switch (pad.synthType) {
+                        case 'fanfare': synth.playFanfare(masterPitch, finalVol); break;
+                        case 'rimshot': synth.playRimshot(masterPitch, finalVol); break;
+                        case 'drumroll': synth.playDrumRoll(masterPitch, finalVol); break;
+                        case 'applause': synth.playApplause(masterPitch, finalVol); break;
+                        case 'airhorn': synth.playAirHorn(masterPitch, finalVol); break;
+                        case 'buzzer': synth.playBuzzer(masterPitch, finalVol); break;
+                        case 'ding': synth.playCorrectDing(masterPitch, finalVol); break;
+                        case 'scratch': synth.playRecordScratch(masterPitch, finalVol); break;
+                        case 'whoosh': synth.playWhoosh(masterPitch, finalVol); break;
+                        case 'countdown': synth.playCountdown(masterPitch, finalVol); break;
+                    }
+                };
+
+                triggerSynth();
+
+                if (pad.isLoop) {
+                    activeLoopIntervals[pad.id] = setInterval(triggerSynth, 2000);
+                } else {
+                    setTimeout(() => {
+                        delete activeAudioSources[pad.id];
+                        renderPads();
+                    }, 1200);
+                }
+            }
+        }
+
+        // Stop Specific Sound Pad
+        function stopSound(padId) {
+            if (activeAudioSources[padId]) {
+                if (typeof activeAudioSources[padId] === 'object' && activeAudioSources[padId].pause) {
+                    activeAudioSources[padId].pause();
+                    activeAudioSources[padId].currentTime = 0;
+                }
+                delete activeAudioSources[padId];
+            }
+            if (activeLoopIntervals[padId]) {
+                clearInterval(activeLoopIntervals[padId]);
+                delete activeLoopIntervals[padId];
+            }
+            renderPads();
+        }
+
+        // Panic Stop All Button
+        stopAllBtn.addEventListener('click', () => {
+            Object.keys(activeAudioSources).forEach(padId => stopSound(padId));
+            Object.keys(activeLoopIntervals).forEach(padId => {
+                clearInterval(activeLoopIntervals[padId]);
+                delete activeLoopIntervals[padId];
+            });
+            activeAudioSources = {};
+            renderPads();
+        });
+
+        // Global Keyboard Event Listener for Hotkeys
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+            const keyPressed = e.key.toLowerCase();
+            const matchingPad = soundPads.find(p => p.hotkey.toLowerCase() === keyPressed);
+
+            if (matchingPad) {
+                e.preventDefault();
+                playSound(matchingPad.id);
+            }
+        });
+
+        // Master Volume slider update
+        masterVolumeInput.addEventListener('input', (e) => {
+            masterVolVal.textContent = `${Math.round(e.target.value * 100)}%`;
+        });
+
+        // Master Pitch slider update
+        masterPitchInput.addEventListener('input', (e) => {
+            masterPitchVal.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+        });
+
+        // Category Filter Tabs
+        categoryContainer.addEventListener('click', (e) => {
+            const chip = e.target.closest('.cat-chip');
+            if (!chip) return;
+
+            document.querySelectorAll('.cat-chip').forEach(c => {
+                c.classList.remove('bg-brand-500', 'text-white', 'shadow-glow');
+                c.classList.add('bg-brand-dark', 'text-gray-300');
+            });
+
+            chip.classList.remove('bg-brand-dark', 'text-gray-300');
+            chip.classList.add('bg-brand-500', 'text-white', 'shadow-glow');
+
+            activeCategory = chip.dataset.category;
+            renderPads();
+        });
+
+        // Live Search Input Filter
+        searchInput.addEventListener('input', () => {
+            renderPads();
+        });
+
+        // Modal Controls
+        function toggleModal(show = true) {
+            if (show) {
+                soundModal.classList.remove('opacity-0', 'pointer-events-none');
+                modalBox.classList.remove('scale-95');
+                modalBox.classList.add('scale-100');
+            } else {
+                soundModal.classList.add('opacity-0', 'pointer-events-none');
+                modalBox.classList.remove('scale-100');
+                modalBox.classList.add('scale-95');
+                soundForm.reset();
+                document.getElementById('editPadId').value = '';
+                
+                // Reset audio UI
+                fileChooseText.textContent = 'Select Audio File';
+                removeAudioBtn.classList.add('hidden');
+                
+                // Reset image UI
+                imageChooseText.textContent = 'Select Image (JPG, PNG)';
+                imagePreview.classList.add('hidden');
+                imagePreview.src = '';
+                removeImageBtn.classList.add('hidden');
+            }
+        }
+
+        openAddModalBtn.addEventListener('click', () => {
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-brand-500"></i> Load Custom Patch';
+            toggleModal(true);
+        });
+
+        closeModalBtn.addEventListener('click', () => toggleModal(false));
+        cancelModalBtn.addEventListener('click', () => toggleModal(false));
+
+        // Audio File Input Change
+        soundFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileChooseText.textContent = `Selected: ${e.target.files[0].name}`;
+            }
+        });
+
+        // Image File Input Change
+        soundImageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const objectUrl = URL.createObjectURL(file);
+                imageChooseText.textContent = `Selected: ${file.name}`;
+                imagePreview.src = objectUrl;
+                imagePreview.classList.remove('hidden');
+                removeImageBtn.classList.remove('hidden');
+            }
+        });
+
+        // Handle removing the custom audio file from a pad
+        removeAudioBtn.addEventListener('click', () => {
+            const padId = document.getElementById('editPadId').value;
+            const pad = soundPads.find(p => p.id === padId);
+            if (pad) {
+                pad.customAudioUrl = null;
+                fileChooseText.textContent = 'Select Audio File';
+                removeAudioBtn.classList.add('hidden');
+                soundFileInput.value = ''; 
+            }
+        });
+
+        // Handle removing the custom image from a pad
+        removeImageBtn.addEventListener('click', () => {
+            imagePreview.src = '';
+            imagePreview.classList.add('hidden');
+            imageChooseText.textContent = 'Select Image (JPG, PNG)';
+            removeImageBtn.classList.add('hidden');
+            soundImageInput.value = ''; 
+            
+            // If editing an existing pad, remove it from the data model instantly
+            const padId = document.getElementById('editPadId').value;
+            const pad = soundPads.find(p => p.id === padId);
+            if (pad) {
+                pad.customImageUrl = null;
+            }
+        });
+
+        function openEditModal(pad) {
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-brand-500"></i> Edit Patch';
+            document.getElementById('editPadId').value = pad.id;
+            document.getElementById('soundNameInput').value = pad.name;
+            document.getElementById('soundCategoryInput').value = pad.category;
+            document.getElementById('soundHotkeyInput').value = pad.hotkey;
+            document.getElementById('soundIconInput').value = pad.icon;
+            
+            // Check if pad already has a custom audio file attached
+            if (pad.customAudioUrl) {
+                fileChooseText.textContent = 'Custom audio attached. Click to replace.';
+                removeAudioBtn.classList.remove('hidden');
+            } else {
+                fileChooseText.textContent = 'Select Audio File';
+                removeAudioBtn.classList.add('hidden');
+            }
+
+            // Check if pad already has a custom image attached
+            if (pad.customImageUrl) {
+                imageChooseText.textContent = 'Custom image attached. Click to replace.';
+                imagePreview.src = pad.customImageUrl;
+                imagePreview.classList.remove('hidden');
+                removeImageBtn.classList.remove('hidden');
+            } else {
+                imageChooseText.textContent = 'Select Image (JPG, PNG)';
+                imagePreview.classList.add('hidden');
+                imagePreview.src = '';
+                removeImageBtn.classList.add('hidden');
+            }
+            
+            toggleModal(true);
+        }
+
+        // Custom Sound Form Submission
+        soundForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const padId = document.getElementById('editPadId').value;
+            const name = document.getElementById('soundNameInput').value.trim();
+            const category = document.getElementById('soundCategoryInput').value;
+            const hotkey = document.getElementById('soundHotkeyInput').value.trim().toLowerCase() || 'a';
+            const icon = document.getElementById('soundIconInput').value;
+            const audioFile = soundFileInput.files[0];
+            const imageFile = soundImageInput.files[0];
+
+            if (padId) {
+                // Editing existing pad
+                const pad = soundPads.find(p => p.id === padId);
+                if (pad) {
+                    pad.name = name;
+                    pad.category = category;
+                    pad.hotkey = hotkey;
+                    pad.icon = icon;
+                    
+                    // If a new audio file is uploaded, create object URL and assign
+                    if (audioFile) {
+                        pad.customAudioUrl = URL.createObjectURL(audioFile);
+                    }
+                    
+                    // If a new image file is uploaded, create object URL and assign
+                    if (imageFile) {
+                        pad.customImageUrl = URL.createObjectURL(imageFile);
+                    }
+                }
+            } else {
+                // Creating new custom pad
+                const newPad = {
+                    id: Date.now().toString(),
+                    name: name,
+                    category: category,
+                    hotkey: hotkey,
+                    icon: icon,
+                    volume: 1.0,
+                    isLoop: false,
+                    customAudioUrl: audioFile ? URL.createObjectURL(audioFile) : null,
+                    customImageUrl: imageFile ? URL.createObjectURL(imageFile) : null,
+                    synthType: audioFile ? null : 'ding' // Fallback synth if no audio file uploaded
+                };
+                soundPads.unshift(newPad);
+            }
+
+            toggleModal(false);
+            renderPads();
+        });
+
+        // Initialize App on Page Load
+        window.addEventListener('load', () => {
+            renderPads();
+        });
+    </script>
+</body>
+</html>
